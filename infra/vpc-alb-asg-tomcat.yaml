@@ -3,7 +3,7 @@ Description: VPC with ALB and ASG with Java 17, Maven, Git, and Tomcat with WAR 
 
 Parameters:
   KeyName:
-    Type: AWS::EC2::KeyPair::slave-key
+   Type: AWS::EC2::KeyPair::KeyName
     Description: Key pair for EC2 instances
 
 Resources:
