@@ -105,70 +105,69 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         UserData:
-          Fn::Base64: !Sub |
-            #!/bin/bash
-            set -e
+  Fn::Base64: !Sub |
+    #!/bin/bash
+    set -e
 
-            echo "===== Updating packages and installing prerequisites ====="
-            apt-get update -y
-            apt-get install -y git maven openjdk-17-jdk curl
+    echo "===== Updating packages and installing prerequisites ====="
+    apt-get update -y
+    apt-get install -y git maven openjdk-17-jdk curl
 
-            echo "===== Creating tomcat user ====="
-            useradd -m -U -d /opt/tomcat -s /bin/false tomcat
+    echo "===== Creating tomcat user ====="
+    useradd -m -U -d /opt/tomcat -s /bin/false tomcat
 
-            echo "===== Downloading and installing Tomcat 9 ====="
-            TOMCAT_VERSION=9.0.87
-            TOMCAT_DIR=/opt/tomcat/apache-tomcat-$${TOMCAT_VERSION}
-            wget https://dlcdn.apache.org/tomcat/tomcat-9/v$${TOMCAT_VERSION}/bin/apache-tomcat-$${TOMCAT_VERSION}.tar.gz -P /tmp
-            tar -xzvf /tmp/apache-tomcat-$${TOMCAT_VERSION}.tar.gz -C /opt/tomcat
-            rm -rf /tmp/apache-tomcat-$${TOMCAT_VERSION}.tar.gz
+    echo "===== Downloading and installing Tomcat 9 ====="
+    wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.87/bin/apache-tomcat-9.0.87.tar.gz -P /tmp
+    tar -xzvf /tmp/apache-tomcat-9.0.87.tar.gz -C /opt/tomcat
+    rm -rf /tmp/apache-tomcat-9.0.87.tar.gz
 
-            chown -R tomcat: $${TOMCAT_DIR}
-            chmod +x $${TOMCAT_DIR}/bin/*.sh
+    chown -R tomcat: /opt/tomcat/apache-tomcat-9.0.87
+    chmod +x /opt/tomcat/apache-tomcat-9.0.87/bin/*.sh
 
-            echo "===== Creating systemd service for Tomcat ====="
-            cat <<EOF > /etc/systemd/system/tomcat.service
-            [Unit]
-            Description=Apache Tomcat 9
-            After=network.target
+    echo "===== Creating systemd service for Tomcat ====="
+    cat <<EOF > /etc/systemd/system/tomcat.service
+    [Unit]
+    Description=Apache Tomcat 9
+    After=network.target
 
-            [Service]
-            Type=forking
-            User=tomcat
-            Group=tomcat
-            Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
-            Environment="CATALINA_HOME=$${TOMCAT_DIR}"
-            ExecStart=$${TOMCAT_DIR}/bin/startup.sh
-            ExecStop=$${TOMCAT_DIR}/bin/shutdown.sh
-            Restart=on-failure
+    [Service]
+    Type=forking
+    User=tomcat
+    Group=tomcat
+    Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+    Environment="CATALINA_HOME=/opt/tomcat/apache-tomcat-9.0.87"
+    ExecStart=/opt/tomcat/apache-tomcat-9.0.87/bin/startup.sh
+    ExecStop=/opt/tomcat/apache-tomcat-9.0.87/bin/shutdown.sh
+    Restart=on-failure
 
-            [Install]
-            WantedBy=multi-user.target
-            EOF
+    [Install]
+    WantedBy=multi-user.target
+    EOF
 
-            echo "===== Reloading systemd and enabling Tomcat ====="
-            systemctl daemon-reload
-            systemctl enable tomcat
+    echo "===== Reloading systemd and enabling Tomcat ====="
+    systemctl daemon-reload
+    systemctl enable tomcat
 
-            echo "===== Removing default ROOT app if exists ====="
-            rm -rf $${TOMCAT_DIR}/webapps/ROOT
+    echo "===== Removing default ROOT app if exists ====="
+    rm -rf /opt/tomcat/apache-tomcat-9.0.87/webapps/ROOT
 
-            echo "===== Downloading ROOT.war from Artifactory ====="
-            curl -L -u admin:password \
-              -o $${TOMCAT_DIR}/webapps/ROOT.war \
-              http://172.31.91.124:8081/artifactory/libs-snapshot-local/ROOT.war
+    echo "===== Downloading ROOT.war from Artifactory ====="
+    curl -L -u admin:password \
+      -o /opt/tomcat/apache-tomcat-9.0.87/webapps/ROOT.war \
+      http://172.31.91.124:8081/artifactory/libs-snapshot-local/ROOT.war
 
-            if [ ! -f $${TOMCAT_DIR}/webapps/ROOT.war ]; then
-              echo "ERROR: ROOT.war not downloaded!"
-              exit 1
-            fi
+    if [ ! -f /opt/tomcat/apache-tomcat-9.0.87/webapps/ROOT.war ]; then
+      echo "ERROR: ROOT.war not downloaded!"
+      exit 1
+    fi
 
-            chown tomcat: $${TOMCAT_DIR}/webapps/ROOT.war
+    chown tomcat: /opt/tomcat/apache-tomcat-9.0.87/webapps/ROOT.war
 
-            echo "===== Starting Tomcat ====="
-            systemctl start tomcat
+    echo "===== Starting Tomcat ====="
+    systemctl start tomcat
 
-            echo "===== Deployment script completed ====="
+    echo "===== Deployment script completed ====="
+
 
 
   AutoScalingGroup:
