@@ -118,13 +118,13 @@ Resources:
 
             echo "===== Downloading and installing Tomcat 9 ====="
             TOMCAT_VERSION=9.0.87
-            TOMCAT_DIR=/opt/tomcat/apache-tomcat-${TOMCAT_VERSION}
-            wget https://dlcdn.apache.org/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -P /tmp
-            tar -xzvf /tmp/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat
-            rm -rf /tmp/apache-tomcat-${TOMCAT_VERSION}.tar.gz
+            TOMCAT_DIR=/opt/tomcat/apache-tomcat-$${TOMCAT_VERSION}
+            wget https://dlcdn.apache.org/tomcat/tomcat-9/v$${TOMCAT_VERSION}/bin/apache-tomcat-$${TOMCAT_VERSION}.tar.gz -P /tmp
+            tar -xzvf /tmp/apache-tomcat-$${TOMCAT_VERSION}.tar.gz -C /opt/tomcat
+            rm -rf /tmp/apache-tomcat-$${TOMCAT_VERSION}.tar.gz
 
-            chown -R tomcat: $TOMCAT_DIR
-            chmod +x $TOMCAT_DIR/bin/*.sh
+            chown -R tomcat: $${TOMCAT_DIR}
+            chmod +x $${TOMCAT_DIR}/bin/*.sh
 
             echo "===== Creating systemd service for Tomcat ====="
             cat <<EOF > /etc/systemd/system/tomcat.service
@@ -137,9 +137,9 @@ Resources:
             User=tomcat
             Group=tomcat
             Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
-            Environment="CATALINA_HOME=$TOMCAT_DIR"
-            ExecStart=$TOMCAT_DIR/bin/startup.sh
-            ExecStop=$TOMCAT_DIR/bin/shutdown.sh
+            Environment="CATALINA_HOME=$${TOMCAT_DIR}"
+            ExecStart=$${TOMCAT_DIR}/bin/startup.sh
+            ExecStop=$${TOMCAT_DIR}/bin/shutdown.sh
             Restart=on-failure
 
             [Install]
@@ -151,24 +151,25 @@ Resources:
             systemctl enable tomcat
 
             echo "===== Removing default ROOT app if exists ====="
-            rm -rf $TOMCAT_DIR/webapps/ROOT
+            rm -rf $${TOMCAT_DIR}/webapps/ROOT
 
             echo "===== Downloading ROOT.war from Artifactory ====="
             curl -L -u admin:password \
-              -o $TOMCAT_DIR/webapps/ROOT.war \
+              -o $${TOMCAT_DIR}/webapps/ROOT.war \
               http://172.31.91.124:8081/artifactory/libs-snapshot-local/ROOT.war
 
-            if [ ! -f $TOMCAT_DIR/webapps/ROOT.war ]; then
+            if [ ! -f $${TOMCAT_DIR}/webapps/ROOT.war ]; then
               echo "ERROR: ROOT.war not downloaded!"
               exit 1
             fi
 
-            chown tomcat: $TOMCAT_DIR/webapps/ROOT.war
+            chown tomcat: $${TOMCAT_DIR}/webapps/ROOT.war
 
             echo "===== Starting Tomcat ====="
             systemctl start tomcat
 
             echo "===== Deployment script completed ====="
+
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
