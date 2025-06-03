@@ -95,7 +95,7 @@ Resources:
           ToPort: 443
           CidrIp: 0.0.0.0/0
 
-   LaunchTemplate:
+  LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
@@ -169,8 +169,6 @@ Resources:
             systemctl start tomcat
 
             echo "===== Deployment script completed ====="
-
-
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
